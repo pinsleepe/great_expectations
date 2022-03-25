@@ -27,10 +27,10 @@ from great_expectations.expectations.metrics import (
 
 # This class defines a Metric to support your Expectation.
 # For most ColumnMapExpectations, the main business logic for calculation will live in this class.
-class ColumnValuesMatchSomeCriteria(ColumnMapMetricProvider):
+class ColumnValuesHaveLowDisparityInSelectionRate(ColumnMapMetricProvider):
 
     # This is the id string that will be used to reference your metric.
-    condition_metric_name = "METRIC NAME GOES HERE"
+    condition_metric_name = "column_values.selection_rate"
 
     # This method implements the core logic for the PandasExecutionEngine
     @column_condition_partial(engine=PandasExecutionEngine)
@@ -53,16 +53,47 @@ class ColumnValuesMatchSomeCriteria(ColumnMapMetricProvider):
 
 
 # This class defines the Expectation itself
-class ExpectColumnValuesToMatchSomeCriteria(ColumnMapExpectation):
-    """TODO: Add a docstring here"""
+class ExpectColumnValuesHaveLowDisparityInSelectionRate(ColumnMapExpectation):
+    """Calculate the fraction of predicted labels matching the ‘good’ outcome."""
 
     # These examples will be shown in the public gallery.
     # They will also be executed as unit tests for your Expectation.
-    examples = []
+    examples = [
+        {
+            "data": {
+                "low_ratio": [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+                "low_ratio_true": [0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+                "high_ratio": [0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+                "high_true": [0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+            },
+            "tests": [
+                {
+                    "title": "test_for_low_selection_ratio",
+                    "exact_match_out": False,
+                    "include_in_gallery": True,
+                    "in": {"column": "low_ratio",
+                           "y_true": "low_ratio_true"},
+                    "out": {
+                        "success": True,
+                    },
+                },
+                {
+                    "title": "test_for_high_selection_ratio",
+                    "exact_match_out": False,
+                    "include_in_gallery": True,
+                    "in": {"column": "high_ratio",
+                           "y_true": "high_ratio_true"},
+                    "out": {
+                        "success": False,
+                    },
+                },
+            ],
+        }
+    ]
 
     # This is the id string of the Metric used by this Expectation.
     # For most Expectations, it will be the same as the `condition_metric_name` defined in your Metric class above.
-    map_metric = "METRIC NAME GOES HERE"
+    map_metric = "column_values.selection_rate"
 
     # This is a list of parameter names that can affect whether the Expectation evaluates to True or False
     success_keys = ("mostly",)
@@ -109,4 +140,4 @@ class ExpectColumnValuesToMatchSomeCriteria(ColumnMapExpectation):
 
 
 if __name__ == "__main__":
-    ExpectColumnValuesToMatchSomeCriteria().print_diagnostic_checklist()
+    ExpectColumnValuesHaveLowDisparityInSelectionRate().print_diagnostic_checklist()
